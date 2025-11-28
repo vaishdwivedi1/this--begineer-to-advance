@@ -1,0 +1,396 @@
+<!-- <!DOCTYPE html>
+<html>
+  <head>
+    <title>JavaScript "this" Guide</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        line-height: 1.6;
+        max-width: 800px;
+        margin: 20px auto;
+      }
+      h2 {
+        margin-top: 30px;
+      }
+      code {
+        background: #f4f4f4;
+        padding: 4px 6px;
+        border-radius: 4px;
+        display: block;
+        margin: 10px 0;
+        white-space: pre-wrap;
+      }
+    </style>
+  </head>
+  <body>
+    <h2>How to Know What <code>this</code> Refers To in JavaScript</h2>
+    <p>
+      The value of <code>this</code> depends only on how a function is called,
+      not where it is written.
+    </p>
+
+    <h2>1. Object Method Call (obj.fn())</h2>
+    <p><code>this</code> becomes the object before the dot.</p>
+    <code>
+      const obj = {<br />
+      x: 10,<br />
+      show() { console.log(this.x); }<br />
+      };<br /><br />
+      obj.show(); // this = obj → prints 10
+    </code>
+
+    <h2>2. Plain Function Call (fn())</h2>
+    <p>
+      Strict mode → <code>this = undefined</code><br />
+      Non-strict → <code>this = window</code>
+    </p>
+    <code>
+      function test() {<br />
+      console.log(this);<br />
+      }<br />
+      test(); // strict → undefined, non-strict → window
+    </code>
+
+    <h2>3. Arrow Function</h2>
+    <p>
+      Arrow functions do not have their own <code>this</code>. They inherit it
+      from the parent scope.
+    </p>
+    <code>
+      const obj = {<br />
+      x: 10,<br />
+      fn: () => console.log(this.x)<br />
+      };<br /><br />
+      obj.fn(); // this comes from outside obj
+    </code>
+
+    <h2>4. call(), apply(), bind()</h2>
+    <p>These explicitly set the value of <code>this</code>.</p>
+    <code>
+      function show() { console.log(this.x); }<br />
+      const user = { x: 50 };<br /><br />
+      show.call(user); // this = user<br />
+      show.apply(user); // this = user<br />
+      const f = show.bind(user);<br />
+      f(); // this = user
+    </code>
+
+    <h2>5. Constructor Call (new)</h2>
+    <p><code>this</code> refers to the newly created object.</p>
+    <code>
+      function User(name) {<br />
+      this.name = name;<br />
+      }<br /><br />
+      const u = new User("Alice"); // this = new User object
+    </code>
+
+    <h2>Checklist for Any <code>this</code> Question</h2>
+    <ol>
+      <li>
+        Is it an arrow function? → <code>this</code> comes from parent scope.
+      </li>
+      <li>
+        Is it called with an object (obj.fn())? →
+        <code>this = that object</code>.
+      </li>
+      <li>
+        Is call/apply/bind used? → <code>this = explicitly passed object</code>.
+      </li>
+      <li>Is it created using new? → <code>this = new instance</code>.</li>
+      <li>
+        Otherwise plain function call → strict: undefined, non-strict: window.
+      </li>
+    </ol>
+  </body>
+</html> -->
+
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>JavaScript "this" Decision Engine — Collapsible Guide</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        line-height: 1.6;
+        max-width: 980px;
+        margin: 20px auto;
+        padding: 0 18px;
+      }
+      code,
+      pre {
+        background: #f4f4f4;
+        padding: 10px;
+        border-radius: 5px;
+        display: block;
+        margin: 10px 0;
+        white-space: pre-wrap;
+        font-family: "Courier New", monospace;
+        font-size: 13px;
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 12px;
+      }
+      table,
+      th,
+      td {
+        border: 1px solid #ccc;
+      }
+      th,
+      td {
+        padding: 10px;
+        text-align: left;
+      }
+      th {
+        background: #eee;
+      }
+      .example {
+        margin: 10px 0 20px 0;
+        padding: 10px;
+        border-left: 4px solid #2b8aef;
+        background: #fbfcff;
+      }
+      .console-output {
+        font-family: "Courier New", monospace;
+        background: #eef6ea;
+        padding: 8px;
+        border-radius: 5px;
+        margin: 6px 0;
+      }
+      details {
+        margin-bottom: 12px;
+        border-left: 4px solid #2b8aef;
+        padding: 8px 10px;
+        background: #fbfcff;
+      }
+      summary {
+        font-weight: bold;
+        cursor: pointer;
+      }
+      h3 {
+        margin-top: 24px;
+        font-size: 1.05rem;
+      }
+      ol.checklist {
+        padding-left: 20px;
+      }
+    </style>
+  </head>
+  <body>
+    <h3>JavaScript <code>this</code> — Quick Reference</h3>
+    <ol>
+      <li>Arrow function → lexical <code>this</code>.</li>
+      <li>Class field arrow → instance <code>this</code>.</li>
+      <li>Called with <code>new</code> → new instance.</li>
+      <li>call / apply → sets <code>this</code>.</li>
+      <li>bind → permanently bound <code>this</code>.</li>
+      <li>Method call (<code>obj.fn()</code>) → object before dot.</li>
+      <li>Plain function call → strict: undefined; non-strict: global.</li>
+      <li>
+        Callback (setTimeout, event, promise) → depends on caller; arrow
+        inherits parent <code>this</code>.
+      </li>
+      <li>Getter/setter → <code>this</code> = object of property access.</li>
+      <li>Method extraction → loses original call-site.</li>
+      <li>Prototype method → <code>this</code> = instance.</li>
+      <li>Chained method calls → evaluate final call-site.</li>
+      <li>Optional chaining → same rules, watch extraction.</li>
+      <li>
+        Promises / microtasks → <code>this</code> rules same as normal
+        functions.
+      </li>
+      <li>Strict vs non-strict → affects plain function calls.</li>
+    </ol>
+
+    <h3>Detailed 15-Step Engine (Collapsible)</h3>
+
+    <details>
+      <summary>Step 1 — Is the function an arrow function?</summary>
+      <p>If yes, <code>this</code> = lexical scope.</p>
+      <div class="example">
+        <code>
+          const a = { x: 1, f: () => console.log(this.x) }; a.f(); // arrow uses
+          outer scope
+        </code>
+        <div class="console-output">Output: undefined</div>
+      </div>
+    </details>
+
+    <details>
+      <summary>Step 2 — Class field arrow?</summary>
+      <p>If yes, <code>this</code> = instance.</p>
+      <div class="example">
+        <code>
+          class A { x = 10; show = () => console.log(this.x); } const a = new
+          A(); const fn = a.show; fn(); // 10
+        </code>
+        <div class="console-output">Output: 10</div>
+      </div>
+    </details>
+
+    <details>
+      <summary>Step 3 — Called with new?</summary>
+      <p><code>this</code> = new instance.</p>
+      <div class="example">
+        <code>
+          function F(){ this.x = 5; } const o = new F(); console.log(o.x); // 5
+        </code>
+        <div class="console-output">Output: 5</div>
+      </div>
+    </details>
+
+    <details>
+      <summary>Step 4 — Constructor returns object?</summary>
+      <p>If yes, returned object is result.</p>
+      <div class="example">
+        <code>
+          function F(){ this.x = 1; return { x: 99 }; } const o = new F();
+          console.log(o.x); // 99
+        </code>
+        <div class="console-output">Output: 99</div>
+      </div>
+    </details>
+
+    <details>
+      <summary>Step 5 — call / apply used?</summary>
+      <p><code>this</code> = first argument passed.</p>
+      <div class="example">
+        <code>
+          function show(){ console.log(this.x); } show.call({ x: 10 }); // 10
+        </code>
+        <div class="console-output">Output: 10</div>
+      </div>
+    </details>
+
+    <details>
+      <summary>Step 6 — bind used?</summary>
+      <p>Bound object is permanent.</p>
+      <div class="example">
+        <code>
+          function f(){ console.log(this.x); } const g = f.bind({ x: 1 }); g();
+          // 1 g.call({ x: 2 }); // 1
+        </code>
+        <div class="console-output">Output: 1</div>
+      </div>
+    </details>
+
+    <details>
+      <summary>Step 7 — Method call (obj.fn())?</summary>
+      <p><code>this</code> = object before dot.</p>
+      <div class="example">
+        <code>
+          const obj = { x: 9, f(){ console.log(this.x); } }; obj.f(); // 9
+        </code>
+        <div class="console-output">Output: 9</div>
+      </div>
+    </details>
+
+    <details>
+      <summary>Step 8 — Callback (setTimeout, event, promise)?</summary>
+      <p>Depends on caller; arrow inherits parent <code>this</code>.</p>
+      <div class="example">
+        <code>
+          const obj = { x: 7, f(){ setTimeout(function(){ console.log(this.x);
+          }, 0); } }; obj.f(); // undefined
+        </code>
+        <div class="console-output">Output: undefined</div>
+      </div>
+    </details>
+
+    <details>
+      <summary>Step 9 — Method extraction?</summary>
+      <p>Call-site lost; <code>this</code> = undefined/global.</p>
+      <div class="example">
+        <code>
+          const obj = { x: 11, show(){ console.log(this.x); } }; const { show }
+          = obj; show(); // undefined
+        </code>
+        <div class="console-output">Output: undefined</div>
+      </div>
+    </details>
+
+    <details>
+      <summary>Step 10 — Getter / Setter?</summary>
+      <p><code>this</code> = object on which property accessed.</p>
+      <div class="example">
+        <code>
+          const obj = { a:10, get x(){ return function(){ console.log(this.a); }
+          } }; obj.x(); // undefined
+        </code>
+        <div class="console-output">Output: undefined</div>
+      </div>
+    </details>
+
+    <details>
+      <summary>Step 11 — Prototype methods?</summary>
+      <p><code>this</code> = instance object.</p>
+      <div class="example">
+        <code>
+          function A(){ this.x = 3; } A.prototype.show = function(){
+          console.log(this.x); }; const a = new A(); a.show(); // 3
+        </code>
+        <div class="console-output">Output: 3</div>
+      </div>
+    </details>
+
+    <details>
+      <summary>Step 12 — Strict vs non-strict</summary>
+      <p>Plain function call: strict → undefined; non-strict → globalThis.</p>
+    </details>
+
+    <details>
+      <summary>Step 13 — Optional chaining</summary>
+      <p>(obj?.fn)() → this = obj if exists; extracted → loses obj.</p>
+    </details>
+
+    <details>
+      <summary>Step 14 — Chained method calls</summary>
+      <p>
+        Evaluate <code>this</code> at final call-site; arrow inherits outer
+        <code>this</code>.
+      </p>
+    </details>
+
+    <details>
+      <summary>Step 15 — Promises / microtasks</summary>
+      <p>
+        Invocation rules same; extracted functions lose original object unless
+        bound.
+      </p>
+    </details>
+
+    <h3>Cheatsheet Table (Precedence)</h3>
+    <table>
+      <tr>
+        <th>Rule</th>
+        <th>Value of <code>this</code></th>
+      </tr>
+      <tr>
+        <td>Arrow / class field arrow</td>
+        <td>Lexical <code>this</code> (scope or instance)</td>
+      </tr>
+      <tr>
+        <td>new</td>
+        <td>New instance (unless constructor returns object)</td>
+      </tr>
+      <tr>
+        <td>call / apply</td>
+        <td>First argument passed</td>
+      </tr>
+      <tr>
+        <td>bind</td>
+        <td>Bound object (permanent)</td>
+      </tr>
+      <tr>
+        <td>obj.fn()</td>
+        <td>Object before dot</td>
+      </tr>
+      <tr>
+        <td>Plain function call</td>
+        <td>Strict: undefined; Non-strict: globalThis</td>
+      </tr>
+    </table>
+  </body>
+</html>
